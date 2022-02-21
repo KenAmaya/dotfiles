@@ -1,0 +1,23 @@
+[global_config]
+  geometry_hinting = True
+  title_transmit_bg_color = "#f02ef0"
+  title_inactive_fg_color = "#9a9996"
+  title_inactive_bg_color = "#400d66"
+  suppress_multiple_term_dialog = True
+  title_use_system_font = False
+  title_font = MesloLGS NF 10
+[keybindings]
+[profiles]
+  [[default]]
+    cursor_color = "#aaaaaa"
+    font = MesloLGS NF 10
+    use_system_font = False
+[layouts]
+  [[default]]
+    [[[window0]]]
+      type = Window
+      parent = ""
+    [[[child1]]]
+      type = Terminal
+      parent = window0
+[plugins]
