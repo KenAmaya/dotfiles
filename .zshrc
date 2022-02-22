@@ -133,6 +133,8 @@ alias discord="flatpak run com.discordapp.Discord"
 
 alias dotgit="/usr/bin/git --git-dir=$HOME/.cfg_fedora/ --work-tree=$HOME"
 # ^ The alias dotgit is regular git that interacts with our bare configuration repository"
+alias gs="git status"
+alias dotgs="dotgit status"
 
 # Ken's own paths
 # For homebrew with zsh
