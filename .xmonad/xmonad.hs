@@ -126,10 +126,10 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
     -- Ken's Additional Keybindings
     -- Enable the keyboard's volume keys
-    , ((0, xF86XK_AudioLowerVolume   ), spawn "amixer set Master 3%-")
-    , ((modm, xF86XK_AudioLowerVolume   ), spawn "amixer set Master 1%-")
-    , ((0, xF86XK_AudioRaiseVolume   ), spawn "amixer set Master 3%+")
-    , ((modm, xF86XK_AudioRaiseVolume   ), spawn "amixer set Master 1%+")
+    , ((0, xF86XK_AudioLowerVolume   ), spawn "amixer set Master 1%-")
+    , ((modm, xF86XK_AudioLowerVolume   ), spawn "amixer set Master 3%-")
+    , ((0, xF86XK_AudioRaiseVolume   ), spawn "amixer set Master 1%+")
+    , ((modm, xF86XK_AudioRaiseVolume   ), spawn "amixer set Master 3%+")
     , ((0, xF86XK_AudioMute          ), spawn "amixer set Master toggle")
     ]
     ++
