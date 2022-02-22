@@ -252,8 +252,8 @@ myStartupHook = return ()
 -- Run xmonad with the settings you specify. No need to modify this.
 --
 main = do 
-  xmproc <- spawnPipe "xmobar -x 0 $HOME/Repos_Here/fedora_configs/xmonad-configs/.xmobarrc-main_monitor" -- xmobar settings for main display
-  xmprox <- spawnPipe "xmobar -x 1 $HOME/Repos_Here/fedora_configs/xmonad-configs/.xmobarrc-2nd_monitor" --- xmobar settings for 2nd display
+  xmproc <- spawnPipe "xmobar -x 0 $HOME/.config/xmobar/.xmobarrc-main" -- xmobar settings for main display
+  xmprox <- spawnPipe "xmobar -x 1 $HOME/.config/xmobar/.xmobarrc-2nd" --- xmobar settings for 2nd display
   xmonad $ ewmh $ docks docksDefaults
 
 docksDefaults = def {
