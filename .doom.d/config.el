@@ -4,10 +4,11 @@
 ;; sync' after modifying this file!
 ;; Ken's settings below:
 
-(setq doom-font (font-spec :family "MesloLGS NF" :size 15)
-      doom-variable-pitch-font (font-spec :family "MesloLGS NF" :size 15))
+(setq doom-font (font-spec :family "MesloLGS NF" :size 12)
+      doom-variable-pitch-font (font-spec :family "MesloLGS NF" :size 12))
 
 (setq doom-theme 'doom-outrun-electric)
+
 
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets.
