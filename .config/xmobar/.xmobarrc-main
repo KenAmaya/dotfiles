@@ -3,17 +3,19 @@
 Config { 
 
    -- appearance
-     font =         "xft:Bitstream Vera Sans Mono:size=12:bold:antialias=true"
+     font =         "xft:Source Code Pro:size=12:bold:antialias=true:hinting=true"
+   , additionalFonts = [ "xft:Mononoki:size=12:antialias=true:hinting=true"
+                       , "xft:Font Awesome 6 Free Solid:size=12"
+                       , "xft:Font Awesome 6 Brands:size=12"]
    , bgColor =      "#220038"
-   , fgColor =      "#545454"
-   , position =     Top
+   , fgColor =      "#ff6c6b"
+   , position =     TopSize L 100 24
    , border =       BottomB
    , borderColor =  "#646464"
 
    -- layout
    , sepChar =  "%"   -- delineator between plugin names and straight text
    , alignSep = "}{"  -- separator between left-right alignment
-   , template = " %multicpu% | %memory% | %dynnetwork% }{ %NZAA% | %date% "
 
    -- general behavior
    , lowerOnStart =     True    -- send to bottom of window stack on start
@@ -37,14 +39,16 @@ Config {
    --   The --template option controls how the plugin is displayed. Text
    --   color can be set by enclosing in <fc></fc> tags. For more details
    --   see http://projects.haskell.org/xmobar/#system-monitor-plugins.
+
+   , template = " %multicpu% | %memory% | %dynnetwork% }{ %NZAA% | %date% "
    , commands = 
 
         -- weather monitor
-        [ Run Weather "NZAA" [ "--template", "<station>: <skyCondition> | <fc=#4682B4><tempC></fc>°C | rh <fc=#4682B4><rh></fc>% " 
+        [ Run Weather "NZAA" [ "--template", "<fn=2>\xf0c2</fn> <skyCondition> | <fc=#4682B4><tempC></fc>°C | rh <fc=#4682B4><rh></fc>%"
                              ] 36000
 
         -- network activity monitor (dynamic interface resolution)
-        , Run DynNetwork     [ "--template" , "<dev>: <tx>kB/s|<rx>kB/s"
+        , Run DynNetwork     [ "--template" , "<fn=2>\xf6ff</fn> : <tx>Kb/s|<rx>Kb/s"
                              , "--Low"      , "1000"       -- units: B/s
                              , "--High"     , "5000"       -- units: B/s
                              , "--low"      , "darkgreen"
@@ -53,7 +57,7 @@ Config {
                              ] 10
 
         -- cpu activity monitor
-        , Run MultiCpu       [ "--template" , "CPU: <autototal>%"
+        , Run MultiCpu       [ "--template" , "<fn=2>\xf108</fn> : <autototal>%"
                              , "--Low"      , "50"         -- units: %
                              , "--High"     , "85"         -- units: %
                              , "--low"      , "darkgreen"
@@ -63,7 +67,7 @@ Config {
 
                           
         -- memory usage monitor
-        , Run Memory         [ "--template" ,"Mem: <usedratio>%"
+        , Run Memory         [ "--template" ,"<fn=2>\xf233</fn> : <usedratio>%"
                              , "--Low"      , "20"        -- units: %
                              , "--High"     , "90"        -- units: %
                              , "--low"      , "darkgreen"
