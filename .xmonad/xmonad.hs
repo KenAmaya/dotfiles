@@ -1,35 +1,62 @@
 -- Ken's Note: Original from https://wiki.haskell.org/Xmonad/Config_archive#Quick_Introductions_to_Haskell
 -- Imports
 
+  -- Base
 import XMonad
-import Data.Monoid
-import System.Exit
-
+import System.Directory
+import System.IO (hPutStrLn)
+import System.Exit (exitSuccess, exitWith, ExitCode( ExitSuccess ))
 import qualified XMonad.StackSet as W
-import qualified Data.Map        as M
+
+  -- Actions
+import XMonad.Actions.CopyWindow (kill1)
+
+  -- Data
+import qualified Data.Map as M
+import Data.Monoid
+
+  -- Hooks
 import XMonad.Hooks.ManageDocks
-import XMonad.Util.Run
-import XMonad.Util.SpawnOnce
 import XMonad.Hooks.EwmhDesktops
+
+  -- Layouts
+
+
+  -- Layouts modifiers
+import XMonad.Layout.LayoutModifier
+
+  -- Utilities
+import XMonad.Util.Run (runProcessWithInput, safeSpawn, spawnPipe)
+import XMonad.Util.SpawnOnce
+import XMonad.Util.EZConfig (additionalKeysP)
+import XMonad.Util.NamedScratchpad
+import XMonad.Util.Dmenu
+
 import Graphics.X11.ExtraTypes.XF86
 
--- Default terminal app used
-myTerminal      = "terminator"
+myTerminal :: String
+myTerminal = "terminator"
 
--- Whether focus follows the mouse pointer.
+myEmacs :: String
+myEmacs = "emacsclient -c -a 'emacs' "
+
+myBrowser :: String
+myBrowser = "firefox "
+
 myFocusFollowsMouse :: Bool
 myFocusFollowsMouse = True
 
--- Whether clicking on a window to focus also passes the click to the window
 myClickJustFocuses :: Bool
 myClickJustFocuses = False
 
--- Width of the window border in pixels.
---
-myBorderWidth   = 1
+myBorderWidth :: Dimension
+myBorderWidth = 1
 
--- Changed default Mod key into "Windows" key
-myModMask       = mod4Mask
+myModMask :: KeyMask
+myModMask = mod4Mask
+
+windowCount :: X (Maybe String)
+windowCount = gets $ Just . show . length . W.integrate' . W.stack . W.workspace . W.current . windowset
 
 -- The default number of workspaces (virtual screens) and their names.
 -- By default we use numeric strings, but any string may be used as a
@@ -244,13 +271,17 @@ myLogHook = return ()
 -- per-workspace layout choices.
 --
 -- By default, do nothing.
-myStartupHook = return ()
+myStartupHook :: X ()
+myStartupHook = do
+  spawnOnce "/usr/bin/emacs --daemon"
+  spawnOnce "nitrogen --set-scaled --random /usr/share/backgrounds" --TODO: Create my own directory of wallpapers
 
 ------------------------------------------------------------------------
 -- Now run xmonad with all the defaults we set up.
 
 -- Run xmonad with the settings you specify. No need to modify this.
 --
+main :: IO ()
 main = do 
   xmproc <- spawnPipe "xmobar -x 0 $HOME/.config/xmobar/.xmobarrc-main" -- xmobar settings for main display
   xmprox <- spawnPipe "xmobar -x 1 $HOME/.config/xmobar/.xmobarrc-2nd" --- xmobar settings for 2nd display
