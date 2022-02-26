@@ -10,20 +10,41 @@ import qualified XMonad.StackSet as W
 
   -- Actions
 import XMonad.Actions.CopyWindow (kill1)
+import XMonad.Actions.MouseResize
+
 
   -- Data
 import qualified Data.Map as M
 import Data.Monoid
+import Data.Tree
 
   -- Hooks
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.EwmhDesktops
+import XMonad.Hooks.ManageHelpers
 
   -- Layouts
-
+import XMonad.Layout.Accordion
+import XMonad.Layout.ResizableTile
+import XMonad.Layout.ThreeColumns
+import XMonad.Layout.Tabbed
+import XMonad.Layout.SimplestFloat
 
   -- Layouts modifiers
 import XMonad.Layout.LayoutModifier
+import XMonad.Layout.NoBorders
+import XMonad.Layout.Renamed
+import XMonad.Layout.ShowWName
+import XMonad.Layout.Simplest
+import XMonad.Layout.Spacing
+import XMonad.Layout.SubLayouts
+import XMonad.Layout.WindowNavigation
+import XMonad.Layout.LimitWindows (limitWindows)
+import XMonad.Layout.WindowArranger (windowArrange, WindowArrangerMsg(..))
+import XMonad.Layout.MultiToggle (mkToggle, single, EOT(EOT), (??))
+import XMonad.Layout.MultiToggle.Instances (StdTransformers(NBFULL, MIRROR, NOBORDERS))
+import qualified XMonad.Layout.ToggleLayouts as T (toggleLayouts, ToggleLayout(Toggle))
+import qualified XMonad.Layout.MultiToggle as MT (Toggle(..))
 
   -- Utilities
 import XMonad.Util.Run (runProcessWithInput, safeSpawn, spawnPipe)
@@ -33,6 +54,7 @@ import XMonad.Util.NamedScratchpad
 import XMonad.Util.Dmenu
 
 import Graphics.X11.ExtraTypes.XF86
+-- import Colors.DoomElectricOutrun --TODO: Learn how to import my own modules in Haskell
 
 myTerminal :: String
 myTerminal = "terminator"
@@ -69,10 +91,8 @@ windowCount = gets $ Just . show . length . W.integrate' . W.stack . W.workspace
 --
 myWorkspaces    = ["1","2","3","4","5","6","7","8","9"]
 
--- Border colors for unfocused and focused windows, respectively.
--- Ken's Note: changed border colors to match RGB lights
-myNormalBorderColor  = "#400d66" -- Deep Purple
-myFocusedBorderColor = "#f02ef0" -- Bright Magenta
+myNormalBorderColor  = "400d66" -- Deep Purple
+myFocusedBorderColor = "f02ef0" -- Bright Magenta
 
 ------------------------------------------------------------------------
 -- Key bindings. Add, modify or remove key bindings here.
@@ -199,7 +219,45 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
     ]
 
 ------------------------------------------------------------------------
--- Layouts:
+-- Layouts Related Settings:
+
+mySpacing :: Integer -> l a -> XMonad.Layout.LayoutModifier.ModifiedLayout Spacing l a
+mySpacing i = spacingRaw False (Border i i i i) True (Border i i i i) True
+
+myFont :: String
+myFont = "xft:Source Code Pro:size=12:regular:antialias=true:hinting=true"
+
+-- Setting colors for tabs layout and tabs sublayout.
+myTabTheme :: Theme
+myTabTheme = def { fontName            = myFont
+                 , activeColor         = "#0c0a20"
+                 , inactiveColor       = "#090819" --from tab.inactiveBackground
+                 , activeBorderColor   = "#fo2ef0" --my own setting: Bright Magenta
+                 , inactiveBorderColor = "#400d66" --my own setting: Deep Purple
+                 , activeTextColor     = "#f2f3f7"
+                 , inactiveTextColor   = "#7984d1" --from panelTitle.inactiveForeground"
+                 }
+
+myShowWNameTheme :: SWNConfig
+myShowWNameTheme = def { swn_font      = "xft:Fira Code:bold:size=42"
+                       , swn_fade      = 1.0
+                       , swn_bgcolor   = "#0c0a20"
+                       , swn_color     = "#f2f3f7"
+                       }
+
+
+-- Ken's layouts:
+tall    = renamed [Replace "tall"]
+          $ smartBorders
+          $ windowNavigation
+          $ addTabs shrinkText myTabTheme
+          $ subLayout [] (smartBorders Simplest)
+          $ limitWindows 8
+          $ mySpacing 4
+          $ ResizableTall 1 (3/100) (1/2) []
+floats  = renamed [Replace "floats"]
+          $ smartBorders
+          $ limitWindows 20 simplestFloat
 
 -- You can specify and transform your layouts by modifying these values.
 -- If you change layout bindings be sure to use 'mod-shift-space' after
@@ -209,19 +267,13 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
 -- The available layouts.  Note that each layout is separated by |||,
 -- which denotes layout choice.
 --
-myLayout = avoidStruts (tiled ||| Mirror tiled ||| Full)
-  where
-     -- default tiling algorithm partitions the screen into two panes
-     tiled   = Tall nmaster delta ratio
+myLayout = avoidStruts $ mouseResize $ windowArrange $ T.toggleLayouts floats
+           $ mkToggle (NBFULL ?? NOBORDERS ?? EOT) myDefaultLayout
+         where
+           myDefaultLayout =     withBorder myBorderWidth tall
+                             ||| floats
 
-     -- The default number of windows in the master pane
-     nmaster = 1
 
-     -- Default proportion of screen occupied by master pane
-     ratio   = 1/2
-
-     -- Percent of screen to increment by when resizing panes
-     delta   = 3/100
 
 ------------------------------------------------------------------------
 -- Window rules:
@@ -303,7 +355,7 @@ docksDefaults = def {
         mouseBindings      = myMouseBindings,
 
       -- hooks, layouts
-        layoutHook         = myLayout,
+        layoutHook         = showWName' myShowWNameTheme $ myLayout,
         manageHook         = myManageHook,
         handleEventHook    = myEventHook,
         logHook            = myLogHook,
