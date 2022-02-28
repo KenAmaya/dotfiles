@@ -22,6 +22,8 @@ import Data.Tree
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.ManageHelpers
+import XMonad.Hooks.ServerMode
+import XMonad.Hooks.SetWMName
 
   -- Layouts
 import XMonad.Layout.Accordion
@@ -230,8 +232,6 @@ myFont = "xft:Source Code Pro:size=12:regular:antialias=true:hinting=true"
 -- Setting colors for tabs layout and tabs sublayout.
 myTabTheme :: Theme
 myTabTheme = def { fontName            = myFont
-                 , activeColor         = "#0c0a20"
-                 , inactiveColor       = "#090819" --from tab.inactiveBackground
                  , activeBorderColor   = "#fo2ef0" --my own setting: Bright Magenta
                  , inactiveBorderColor = "#400d66" --my own setting: Deep Purple
                  , activeTextColor     = "#f2f3f7"
@@ -241,8 +241,8 @@ myTabTheme = def { fontName            = myFont
 myShowWNameTheme :: SWNConfig
 myShowWNameTheme = def { swn_font      = "xft:Fira Code:bold:size=42"
                        , swn_fade      = 1.0
-                       , swn_bgcolor   = "#0c0a20"
-                       , swn_color     = "#f2f3f7"
+                       , swn_bgcolor   = "f02ef0"
+                       , swn_color     = "#f2f3f3"
                        }
 
 
@@ -338,8 +338,9 @@ myLogHook = return ()
 -- By default, do nothing.
 myStartupHook :: X ()
 myStartupHook = do
-  spawnOnce "/usr/bin/emacs --daemon"
-  spawnOnce "nitrogen --set-scaled --random /usr/share/backgrounds" --TODO: Create my own directory of wallpapers
+    spawnOnce "/usr/bin/emacs --daemon &"
+    spawnOnce "nitrogen --set-scaled --random /usr/share/backgrounds &" --TODO: Create my own directory of wallpapers
+    setWMName "LG3D"
 
 ------------------------------------------------------------------------
 -- Now run xmonad with all the defaults we set up.
@@ -369,7 +370,7 @@ docksDefaults = def {
 
       -- hooks, layouts
         layoutHook         = showWName' myShowWNameTheme $ myLayout,
-        manageHook         = myManageHook,
+        manageHook         = myManageHook <+> manageDocks,
         handleEventHook    = myEventHook,
         logHook            = myLogHook,
         startupHook        = myStartupHook

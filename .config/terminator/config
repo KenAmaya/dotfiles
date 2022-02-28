@@ -1,8 +1,20 @@
 [global_config]
-  inactive_color_offset = 0.61
-  suppress_multiple_term_dialog = True
+  handle_size = 2
   title_hide_sizetext = True
+  inactive_color_offset = 1.0
+  suppress_multiple_term_dialog = True
+  line_height = 1.2
 [keybindings]
+[profiles]
+  [[default]]
+    background_color = "#0c0a20"
+    cursor_color = "#f8f8f2"
+    font = MesloLGS NF 10
+    foreground_color = "#f8f8f2"
+    show_titlebar = False
+    palette = "#262626:#e356a7:#42e66c:#e4f34a:#ff2afc:#e64747:#75d7ec:#efa554:#7a7a7a:#ff79c6:#50fa7b:#f1fa8c:#bd93f9:#ff5555:#8be9fd:#ffb86c"
+    use_system_font = False
+    background_image = None
 [layouts]
   [[default]]
     [[[child1]]]
@@ -12,12 +24,3 @@
       parent = ""
       type = Window
 [plugins]
-[profiles]
-  [[default]]
-    show_titlebar = False
-    background_color = "#0c0a20"
-    background_image = None
-    font = MesloLGS NF 10
-    foreground_color = "#f8f8f2"
-    palette = "#262626:#e356a7:#42e66c:#e4f34a:#ff2afc:#e64747:#75d7ec:#efa554:#7a7a7a:#ff79c6:#50fa7b:#f1fa8c:#bd93f9:#ff5555:#8be9fd:#ffb86c"
-    use_system_font = False
