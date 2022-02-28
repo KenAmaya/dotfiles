@@ -43,3 +43,5 @@ git config --global user.email ken.amaya@protonmail.ch
 git clone https://github.com/hlissner/doom-emacs ~/.emacs.d
 ~/.emacs.d/doom install
 
+# Install Rust
+curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
