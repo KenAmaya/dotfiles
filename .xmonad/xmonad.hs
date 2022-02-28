@@ -253,11 +253,22 @@ tall    = renamed [Replace "tall"]
           $ addTabs shrinkText myTabTheme
           $ subLayout [] (smartBorders Simplest)
           $ limitWindows 8
-          $ mySpacing 4
+          $ mySpacing 3
           $ ResizableTall 1 (3/100) (1/2) []
 floats  = renamed [Replace "floats"]
           $ smartBorders
           $ limitWindows 20 simplestFloat
+
+threeRow = renamed [Replace "threeRow"]
+         $ smartBorders
+         $ windowNavigation
+         $ addTabs shrinkText myTabTheme
+         $ subLayout [] (smartBorders Simplest)
+         $ limitWindows 8
+         $ mySpacing 3
+         $ Mirror
+         $ ThreeCol 1 (3/100) (1/2)
+
 
 -- You can specify and transform your layouts by modifying these values.
 -- If you change layout bindings be sure to use 'mod-shift-space' after
@@ -271,7 +282,9 @@ myLayout = avoidStruts $ mouseResize $ windowArrange $ T.toggleLayouts floats
            $ mkToggle (NBFULL ?? NOBORDERS ?? EOT) myDefaultLayout
          where
            myDefaultLayout =     withBorder myBorderWidth tall
-                             ||| floats
+                             ||| threeRow
+                             ||| Full
+
 
 
 
