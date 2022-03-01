@@ -45,3 +45,6 @@ git clone https://github.com/hlissner/doom-emacs ~/.emacs.d
 
 # Install Rust
 curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
+# Check if install was successful and log to file
+rustc --version >> install_result.log 2>&1
+cargo --version
