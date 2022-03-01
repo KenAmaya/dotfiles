@@ -61,11 +61,14 @@ import Graphics.X11.ExtraTypes.XF86
 myTerminal :: String
 myTerminal = "terminator"
 
-myEmacs :: String
-myEmacs = "emacsclient -c -a 'emacs' "
-
 myBrowser :: String
-myBrowser = "firefox "
+myBrowser = "firefox &"
+
+myEmacs :: String
+myEmacs = "emacsclient -c &"
+
+myMsgApp :: String
+myMsgApp = "flatpak run com.discordapp.Discord &"
 
 myFocusFollowsMouse :: Bool
 myFocusFollowsMouse = True
@@ -91,7 +94,10 @@ windowCount = gets $ Just . show . length . W.integrate' . W.stack . W.workspace
 --
 -- > workspaces = ["web", "irc", "code" ] ++ map show [4..9]
 --
-myWorkspaces    = ["1","2","3","4","5","6","7","8","9"]
+myWorkspaces    = ["1","2","3","4","M&Ms"]
+-- Workspaces Legend:
+-- 1 to 4 : Main workspaces
+-- M&Ms : For eMails, Music players, and Messages
 
 myNormalBorderColor  = "400d66" -- Deep Purple
 myFocusedBorderColor = "f02ef0" -- Bright Magenta
@@ -104,11 +110,17 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     -- launch a terminal
     [ ((modm .|. shiftMask, xK_Return), spawn $ XMonad.terminal conf)
 
+    -- launch Doom Emacs client
+    , ((modm,               xK_o     ), spawn myEmacs)
+
+    -- launch Firefox
+    , ((modm,               xK_f     ), spawn myBrowser)
+
+    -- launch Discord
+    , ((modm .|. shiftMask, xK_f     ), spawn myMsgApp)
+
     -- launch dmenu
     , ((modm,               xK_p     ), spawn "dmenu_run")
-
-    -- launch gmrun
-    , ((modm .|. shiftMask, xK_p     ), spawn "gmrun")
 
     -- close focused window
     , ((modm .|. shiftMask, xK_c     ), kill)
