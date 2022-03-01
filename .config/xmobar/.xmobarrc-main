@@ -1,4 +1,5 @@
 -- Ken's Note: Original taken from https://wiki.archlinux.org/title/Xmobar
+-- Insipiration take from DistroTube
 
 Config { 
 
