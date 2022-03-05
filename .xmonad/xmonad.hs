@@ -94,17 +94,19 @@ windowCount = gets $ Just . show . length . W.integrate' . W.stack . W.workspace
 --
 -- > workspaces = ["web", "irc", "code" ] ++ map show [4..9]
 --
+myWorkspaces :: [String]
 myWorkspaces    = ["1","2","3","4","M&Ms"]
 -- Workspaces Legend:
 -- 1 to 4 : Main workspaces
 -- M&Ms : For eMails, Music players, and Messages
-
+myNormalBorderColor :: String
+myFocusedBorderColor :: String
 myNormalBorderColor  = "400d66" -- Deep Purple
 myFocusedBorderColor = "f02ef0" -- Bright Magenta
 
 ------------------------------------------------------------------------
 -- Key bindings. Add, modify or remove key bindings here.
---
+myKeys :: XConfig Layout -> M.Map (ButtonMask, KeySym) (X ())
 myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
     -- launch a terminal
@@ -215,7 +217,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
 ------------------------------------------------------------------------
 -- Mouse bindings: default actions bound to mouse events
---
+myMouseBindings :: XConfig Layout -> M.Map (ButtonMask, Button) (Window -> X ())
 myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
 
     -- mod-button1, Set the window to floating mode and move by dragging
@@ -314,7 +316,7 @@ myLayout = avoidStruts $ mouseResize $ windowArrange $ T.toggleLayouts floats
 --
 -- To match on the WM_NAME, you can use 'title' in the same way that
 -- 'className' and 'resource' are used below.
---
+myManageHook :: ManageHook
 myManageHook = composeAll
     [ className =? "MPlayer"        --> doFloat
     , className =? "Gimp"           --> doFloat
@@ -330,6 +332,7 @@ myManageHook = composeAll
 -- return (All True) if the default handler is to be run afterwards. To
 -- combine event hooks use mappend or mconcat from Data.Monoid.
 --
+myEventHook :: Event -> X All
 myEventHook = ewmhDesktopsEventHook
 
 ------------------------------------------------------------------------
