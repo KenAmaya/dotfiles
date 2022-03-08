@@ -320,6 +320,8 @@ myManageHook :: ManageHook
 myManageHook = composeAll
     [ className =? "MPlayer"        --> doFloat
     , className =? "Gimp"           --> doFloat
+    , className =? "Thunar"         --> doFloat
+    , className =? "discord"        --> doShift ( myWorkspaces !! 4 )
     , resource  =? "desktop_window" --> doIgnore
     , resource  =? "kdesktop"       --> doIgnore ]
 
