@@ -101,8 +101,8 @@ myWorkspaces    = ["1","2","3","4","M&Ms"]
 -- M&Ms : For eMails, Music players, and Messages
 myNormalBorderColor :: String
 myFocusedBorderColor :: String
-myNormalBorderColor  = "400d66" -- Deep Purple
-myFocusedBorderColor = "f02ef0" -- Bright Magenta
+myNormalBorderColor  = "#400d66" -- Deep Purple
+myFocusedBorderColor = "#f02ef0" -- Bright Magenta
 
 ------------------------------------------------------------------------
 -- Key bindings. Add, modify or remove key bindings here.
