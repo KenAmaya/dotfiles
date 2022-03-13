@@ -97,3 +97,4 @@ export PATH=$PATH:$HOME/.local/bin
 # Add my emac installation bin
 export PATH=:$PATH:$HOME/.emacs.d/bin
 
+[ -f "/home/Ken/.ghcup/env" ] && source "/home/Ken/.ghcup/env" # ghcup-env
