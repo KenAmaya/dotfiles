@@ -321,7 +321,7 @@ myManageHook :: ManageHook
 myManageHook = composeAll
     [ className =? "MPlayer"        --> doFloat
     , className =? "Gimp"           --> doFloat
-    , className =? "Thunar"         --> doFloat
+    , className =? "Thunar"         --> doRectFloat ( W.RationalRect 0.2 0.2 0.5 0.5) -- Float the Thunar window somewhere in the middle(0.2) sized at half the width and height of the monitor(0.5)
     , className =? "discord"        --> doShift "M&Ms"
     , resource  =? "desktop_window" --> doIgnore
     , resource  =? "kdesktop"       --> doIgnore ]
@@ -356,7 +356,8 @@ myLogHook = return ()
 -- By default, do nothing.
 myStartupHook :: X ()
 myStartupHook = do
-    spawnOnce "/usr/bin/emacs --daemon &"
+    spawnOnce "/usr/bin/emacs --daemon &" -- Launch the emacs server daemon for the emacs client
+    spawnOnce "volumeicon"
     spawnOnce "nitrogen --set-scaled --random /usr/share/backgrounds &" --TODO: Create my own directory of wallpapers
     setWMName "LG3D"
 
