@@ -268,7 +268,8 @@ tall    = renamed [Replace "tall"]
           $ subLayout [] (smartBorders Simplest)
           $ limitWindows 8
           $ mySpacing 3
-          $ ResizableTall 1 (3/100) (1/2) []
+          $ ResizableTall 1 (3/100) (1/3) []
+
 floats  = renamed [Replace "floats"]
           $ smartBorders
           $ limitWindows 20 simplestFloat
@@ -321,7 +322,7 @@ myManageHook = composeAll
     [ className =? "MPlayer"        --> doFloat
     , className =? "Gimp"           --> doFloat
     , className =? "Thunar"         --> doFloat
-    , className =? "discord"        --> doShift ( myWorkspaces !! 4 )
+    , className =? "discord"        --> doShift "M&Ms"
     , resource  =? "desktop_window" --> doIgnore
     , resource  =? "kdesktop"       --> doIgnore ]
 
