@@ -70,6 +70,9 @@ myEmacs = "emacsclient -c &"
 myMsgApp :: String
 myMsgApp = "flatpak run com.discordapp.Discord &"
 
+myFileMgr :: String
+myFileMgr = "nautilus"
+
 myFocusFollowsMouse :: Bool
 myFocusFollowsMouse = True
 
@@ -120,6 +123,9 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
     -- launch Discord
     , ((modm .|. shiftMask, xK_f     ), spawn myMsgApp)
+
+    -- launch Nautilus
+    , ((modm,               xK_d     ), spawn myFileMgr)
 
     -- launch dmenu
     , ((modm,               xK_p     ), spawn "dmenu_run")
@@ -321,7 +327,7 @@ myManageHook :: ManageHook
 myManageHook = composeAll
     [ className =? "MPlayer"        --> doFloat
     , className =? "Gimp"           --> doFloat
-    , className =? "Thunar"         --> doRectFloat ( W.RationalRect 0.2 0.2 0.5 0.5) -- Float the Thunar window somewhere in the middle(0.2) sized at half the width and height of the monitor(0.5)
+    , className =? "Org.gnome.Nautilus"         --> doRectFloat ( W.RationalRect 0.2 0.2 0.5 0.5) -- Float the nautilus window somewhere in the middle(0.2) sized at half the width and height of the monitor(0.5)
     , className =? "discord"        --> doShift "M&Ms"
     , resource  =? "desktop_window" --> doIgnore
     , resource  =? "kdesktop"       --> doIgnore ]
