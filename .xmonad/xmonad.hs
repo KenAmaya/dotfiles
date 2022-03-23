@@ -274,21 +274,26 @@ tall    = renamed [Replace "tall"]
           $ subLayout [] (smartBorders Simplest)
           $ limitWindows 8
           $ mySpacing 3
-          $ ResizableTall 1 (3/100) (1/3) []
+          $ ResizableTall 1 (3/100) (2/5) []
 
 floats  = renamed [Replace "floats"]
           $ smartBorders
           $ limitWindows 20 simplestFloat
 
-threeRow = renamed [Replace "threeRow"]
+threeCol = renamed [Replace "threeCol"]
          $ smartBorders
          $ windowNavigation
          $ addTabs shrinkText myTabTheme
          $ subLayout [] (smartBorders Simplest)
          $ limitWindows 8
          $ mySpacing 3
-         $ Mirror
-         $ ThreeCol 1 (3/100) (1/2)
+         $ ThreeCol 1 (3/100) (1/3)
+
+tallAccordion = renamed [Replace "tallAccordion"]
+              $ Accordion
+
+wideAccordion = renamed [Replace "wideAccordion"]
+              $ Mirror Accordion
 
 
 -- You can specify and transform your layouts by modifying these values.
@@ -303,7 +308,9 @@ myLayout = avoidStruts $ mouseResize $ windowArrange $ T.toggleLayouts floats
            $ mkToggle (NBFULL ?? NOBORDERS ?? EOT) myDefaultLayout
          where
            myDefaultLayout =     withBorder myBorderWidth tall
-                             ||| threeRow
+                             ||| threeCol
+                             ||| tallAccordion
+                             ||| wideAccordion
                              ||| Full
 
 
@@ -327,7 +334,7 @@ myManageHook :: ManageHook
 myManageHook = composeAll
     [ className =? "MPlayer"        --> doFloat
     , className =? "Gimp"           --> doFloat
-    , className =? "Org.gnome.Nautilus"         --> doRectFloat ( W.RationalRect 0.25 0.25 0.5 0.5) -- Float the nautilus window somewhere in the middle(0.25) sized at half the width and height of the monitor(0.5)
+    , className =? "Org.gnome.Nautilus"         --> doRectFloat ( W.RationalRect 0.2 0.2 0.5 0.5) -- Float the nautilus window somewhere in the middle(0.2) sized at half the width and height of the monitor(0.5)
     , className =? "discord"        --> doShift "M&Ms"
     , resource  =? "desktop_window" --> doIgnore
     , resource  =? "kdesktop"       --> doIgnore ]
@@ -350,7 +357,7 @@ myEventHook = ewmhDesktopsEventHook
 -- Perform an arbitrary action on each internal state change or X event.
 -- See the 'XMonad.Hooks.DynamicLog' extension for examples.
 --
-myLogHook = return ()
+-- myLogHook = return ()
 
 ------------------------------------------------------------------------
 -- Startup hook
@@ -397,7 +404,6 @@ docksDefaults = def {
         layoutHook         = showWName' myShowWNameTheme $ myLayout,
         manageHook         = myManageHook <+> manageDocks,
         handleEventHook    = myEventHook,
-        logHook            = myLogHook,
         startupHook        = myStartupHook
     }
 

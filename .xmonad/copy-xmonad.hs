@@ -1,35 +1,92 @@
 -- Ken's Note: Original from https://wiki.haskell.org/Xmonad/Config_archive#Quick_Introductions_to_Haskell
 -- Imports
 
+  -- Base
 import XMonad
-import Data.Monoid
-import System.Exit
-
+import System.Directory
+import System.IO (hPutStrLn)
+import System.Exit (exitSuccess, exitWith, ExitCode( ExitSuccess ))
 import qualified XMonad.StackSet as W
-import qualified Data.Map        as M
+
+  -- Actions
+import XMonad.Actions.CopyWindow (kill1)
+import XMonad.Actions.MouseResize
+
+
+  -- Data
+import qualified Data.Map as M
+import Data.Monoid
+import Data.Tree
+
+  -- Hooks
 import XMonad.Hooks.ManageDocks
-import XMonad.Util.Run
-import XMonad.Util.SpawnOnce
 import XMonad.Hooks.EwmhDesktops
+import XMonad.Hooks.ManageHelpers
+import XMonad.Hooks.ServerMode
+import XMonad.Hooks.SetWMName
+
+  -- Layouts
+import XMonad.Layout.Accordion
+import XMonad.Layout.ResizableTile
+import XMonad.Layout.ThreeColumns
+import XMonad.Layout.Tabbed
+import XMonad.Layout.SimplestFloat
+
+  -- Layouts modifiers
+import XMonad.Layout.LayoutModifier
+import XMonad.Layout.NoBorders
+import XMonad.Layout.Renamed
+import XMonad.Layout.ShowWName
+import XMonad.Layout.Simplest
+import XMonad.Layout.Spacing
+import XMonad.Layout.SubLayouts
+import XMonad.Layout.WindowNavigation
+import XMonad.Layout.LimitWindows (limitWindows)
+import XMonad.Layout.WindowArranger (windowArrange, WindowArrangerMsg(..))
+import XMonad.Layout.MultiToggle (mkToggle, single, EOT(EOT), (??))
+import XMonad.Layout.MultiToggle.Instances (StdTransformers(NBFULL, MIRROR, NOBORDERS))
+import qualified XMonad.Layout.ToggleLayouts as T (toggleLayouts, ToggleLayout(Toggle))
+import qualified XMonad.Layout.MultiToggle as MT (Toggle(..))
+
+  -- Utilities
+import XMonad.Util.Run (runProcessWithInput, safeSpawn, spawnPipe)
+import XMonad.Util.SpawnOnce
+import XMonad.Util.EZConfig (additionalKeysP)
+import XMonad.Util.NamedScratchpad
+import XMonad.Util.Dmenu
+
 import Graphics.X11.ExtraTypes.XF86
+-- import Colors.DoomElectricOutrun --TODO: Learn how to import my own modules in Haskell
 
--- Default terminal app used
-myTerminal      = "terminator"
+myTerminal :: String
+myTerminal = "terminator"
 
--- Whether focus follows the mouse pointer.
+myBrowser :: String
+myBrowser = "firefox &"
+
+myEmacs :: String
+myEmacs = "emacsclient -c &"
+
+myMsgApp :: String
+myMsgApp = "flatpak run com.discordapp.Discord &"
+
+myFileMgr :: String
+myFileMgr = "nautilus"
+
 myFocusFollowsMouse :: Bool
 myFocusFollowsMouse = True
 
--- Whether clicking on a window to focus also passes the click to the window
 myClickJustFocuses :: Bool
 myClickJustFocuses = False
 
--- Width of the window border in pixels.
---
-myBorderWidth   = 1
+myBorderWidth :: Dimension
+myBorderWidth = 1
 
--- Changed default Mod key into "Windows" key
-myModMask       = mod4Mask
+myModMask :: KeyMask
+myModMask = mod4Mask
+
+windowCount :: X (Maybe String)
+windowCount = gets $ Just . show . length . W.integrate' . W.stack . W.workspace . W.current . windowset
 
 -- The default number of workspaces (virtual screens) and their names.
 -- By default we use numeric strings, but any string may be used as a
@@ -40,26 +97,38 @@ myModMask       = mod4Mask
 --
 -- > workspaces = ["web", "irc", "code" ] ++ map show [4..9]
 --
-myWorkspaces    = ["1","2","3","4","5","6","7","8","9"]
-
--- Border colors for unfocused and focused windows, respectively.
--- Ken's Note: changed border colors to match RGB lights
+myWorkspaces :: [String]
+myWorkspaces    = ["1","2","3","4","M&Ms"]
+-- Workspaces Legend:
+-- 1 to 4 : Main workspaces
+-- M&Ms : For eMails, Music players, and Messages
+myNormalBorderColor :: String
+myFocusedBorderColor :: String
 myNormalBorderColor  = "#400d66" -- Deep Purple
 myFocusedBorderColor = "#f02ef0" -- Bright Magenta
 
 ------------------------------------------------------------------------
 -- Key bindings. Add, modify or remove key bindings here.
---
+myKeys :: XConfig Layout -> M.Map (ButtonMask, KeySym) (X ())
 myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
     -- launch a terminal
     [ ((modm .|. shiftMask, xK_Return), spawn $ XMonad.terminal conf)
 
+    -- launch Doom Emacs client
+    , ((modm,               xK_o     ), spawn myEmacs)
+
+    -- launch Firefox
+    , ((modm,               xK_f     ), spawn myBrowser)
+
+    -- launch Discord
+    , ((modm .|. shiftMask, xK_f     ), spawn myMsgApp)
+
+    -- launch Nautilus
+    , ((modm,               xK_d     ), spawn myFileMgr)
+
     -- launch dmenu
     , ((modm,               xK_p     ), spawn "dmenu_run")
-
-    -- launch gmrun
-    , ((modm .|. shiftMask, xK_p     ), spawn "gmrun")
 
     -- close focused window
     , ((modm .|. shiftMask, xK_c     ), kill)
@@ -126,10 +195,10 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
     -- Ken's Additional Keybindings
     -- Enable the keyboard's volume keys
-    , ((0, xF86XK_AudioLowerVolume   ), spawn "amixer set Master 3%-")
-    , ((modm, xF86XK_AudioLowerVolume   ), spawn "amixer set Master 1%-")
-    , ((0, xF86XK_AudioRaiseVolume   ), spawn "amixer set Master 3%+")
-    , ((modm, xF86XK_AudioRaiseVolume   ), spawn "amixer set Master 1%+")
+    , ((0, xF86XK_AudioLowerVolume   ), spawn "amixer set Master 1%-")
+    , ((modm, xF86XK_AudioLowerVolume   ), spawn "amixer set Master 3%-")
+    , ((0, xF86XK_AudioRaiseVolume   ), spawn "amixer set Master 1%+")
+    , ((modm, xF86XK_AudioRaiseVolume   ), spawn "amixer set Master 3%+")
     , ((0, xF86XK_AudioMute          ), spawn "amixer set Master toggle")
     ]
     ++
@@ -154,7 +223,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
 ------------------------------------------------------------------------
 -- Mouse bindings: default actions bound to mouse events
---
+myMouseBindings :: XConfig Layout -> M.Map (ButtonMask, Button) (Window -> X ())
 myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
 
     -- mod-button1, Set the window to floating mode and move by dragging
@@ -172,7 +241,55 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
     ]
 
 ------------------------------------------------------------------------
--- Layouts:
+-- Layouts Related Settings:
+
+mySpacing :: Integer -> l a -> XMonad.Layout.LayoutModifier.ModifiedLayout Spacing l a
+mySpacing i = spacingRaw False (Border i i i i) True (Border i i i i) True
+
+myFont :: String
+myFont = "xft:Source Code Pro:size=12:regular:antialias=true:hinting=true"
+
+-- Setting colors for tabs layout and tabs sublayout.
+myTabTheme :: Theme
+myTabTheme = def { fontName            = myFont
+                 , activeBorderColor   = "#fo2ef0" --my own setting: Bright Magenta
+                 , inactiveBorderColor = "#400d66" --my own setting: Deep Purple
+                 , activeTextColor     = "#f2f3f7"
+                 , inactiveTextColor   = "#7984d1" --from panelTitle.inactiveForeground"
+                 }
+
+myShowWNameTheme :: SWNConfig
+myShowWNameTheme = def { swn_font      = "xft:Fira Code:bold:size=42"
+                       , swn_fade      = 1.0
+                       , swn_bgcolor   = "f02ef0"
+                       , swn_color     = "#f2f3f3"
+                       }
+
+
+-- Ken's layouts:
+tall    = renamed [Replace "tall"]
+          $ smartBorders
+          $ windowNavigation
+          $ addTabs shrinkText myTabTheme
+          $ subLayout [] (smartBorders Simplest)
+          $ limitWindows 8
+          $ mySpacing 3
+          $ ResizableTall 1 (3/100) (1/3) []
+
+floats  = renamed [Replace "floats"]
+          $ smartBorders
+          $ limitWindows 20 simplestFloat
+
+threeRow = renamed [Replace "threeRow"]
+         $ smartBorders
+         $ windowNavigation
+         $ addTabs shrinkText myTabTheme
+         $ subLayout [] (smartBorders Simplest)
+         $ limitWindows 8
+         $ mySpacing 3
+         $ Mirror
+         $ ThreeCol 1 (3/100) (1/2)
+
 
 -- You can specify and transform your layouts by modifying these values.
 -- If you change layout bindings be sure to use 'mod-shift-space' after
@@ -182,19 +299,15 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
 -- The available layouts.  Note that each layout is separated by |||,
 -- which denotes layout choice.
 --
-myLayout = avoidStruts (tiled ||| Mirror tiled ||| Full)
-  where
-     -- default tiling algorithm partitions the screen into two panes
-     tiled   = Tall nmaster delta ratio
+myLayout = avoidStruts $ mouseResize $ windowArrange $ T.toggleLayouts floats
+           $ mkToggle (NBFULL ?? NOBORDERS ?? EOT) myDefaultLayout
+         where
+           myDefaultLayout =     withBorder myBorderWidth tall
+                             ||| threeRow
+                             ||| Full
 
-     -- The default number of windows in the master pane
-     nmaster = 1
 
-     -- Default proportion of screen occupied by master pane
-     ratio   = 1/2
 
-     -- Percent of screen to increment by when resizing panes
-     delta   = 3/100
 
 ------------------------------------------------------------------------
 -- Window rules:
@@ -210,10 +323,12 @@ myLayout = avoidStruts (tiled ||| Mirror tiled ||| Full)
 --
 -- To match on the WM_NAME, you can use 'title' in the same way that
 -- 'className' and 'resource' are used below.
---
+myManageHook :: ManageHook
 myManageHook = composeAll
     [ className =? "MPlayer"        --> doFloat
     , className =? "Gimp"           --> doFloat
+    , className =? "Org.gnome.Nautilus"         --> doRectFloat ( W.RationalRect 0.25 0.25 0.5 0.5) -- Float the nautilus window somewhere in the middle(0.25) sized at half the width and height of the monitor(0.5)
+    , className =? "discord"        --> doShift "M&Ms"
     , resource  =? "desktop_window" --> doIgnore
     , resource  =? "kdesktop"       --> doIgnore ]
 
@@ -226,6 +341,7 @@ myManageHook = composeAll
 -- return (All True) if the default handler is to be run afterwards. To
 -- combine event hooks use mappend or mconcat from Data.Monoid.
 --
+myEventHook :: Event -> X All
 myEventHook = ewmhDesktopsEventHook
 
 ------------------------------------------------------------------------
@@ -244,15 +360,22 @@ myLogHook = return ()
 -- per-workspace layout choices.
 --
 -- By default, do nothing.
-myStartupHook = return ()
+myStartupHook :: X ()
+myStartupHook = do
+    spawnOnce "/usr/bin/emacs --daemon &" -- Launch the emacs server daemon for the emacs client
+    spawnOnce "volumeicon"
+    spawnOnce "nitrogen --set-scaled --random /usr/share/backgrounds" --TODO: Create my own directory of wallpapers
+    setWMName "LG3D"
 
 ------------------------------------------------------------------------
 -- Now run xmonad with all the defaults we set up.
 
 -- Run xmonad with the settings you specify. No need to modify this.
 --
+main :: IO ()
 main = do 
-  xmproc <- spawnPipe "xmobar -x 0 $HOME/Git_Repos_Here/fedora_configs/xmonad-configs/.xmobarrc-main_monitor" -- xmobar settings for main display
+  xmproc <- spawnPipe "xmobar -x 0 $HOME/.config/xmobar/.xmobarrc-main" -- xmobar settings for main display
+  xmprox <- spawnPipe "xmobar -x 1 $HOME/.config/xmobar/.xmobarrc-2nd" --- xmobar settings for 2nd display
   xmonad $ ewmh $ docks docksDefaults
 
 docksDefaults = def {
@@ -271,8 +394,8 @@ docksDefaults = def {
         mouseBindings      = myMouseBindings,
 
       -- hooks, layouts
-        layoutHook         = myLayout,
-        manageHook         = myManageHook,
+        layoutHook         = showWName' myShowWNameTheme $ myLayout,
+        manageHook         = myManageHook <+> manageDocks,
         handleEventHook    = myEventHook,
         logHook            = myLogHook,
         startupHook        = myStartupHook
