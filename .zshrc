@@ -43,7 +43,7 @@ ZSH_CUSTOM="$HOME/.oh-my-zsh_custom/"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git)
+plugins=(sudo colored-man-pages git gh rust python docker docker-compose ufw)
 
 source $ZSH/oh-my-zsh.sh
 
