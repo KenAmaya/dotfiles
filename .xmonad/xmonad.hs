@@ -3,26 +3,20 @@
 
   -- Base
 import XMonad
-import System.Directory
-import System.IO (hPutStrLn)
-import System.Exit (exitSuccess, exitWith, ExitCode( ExitSuccess ))
+import System.Exit (exitWith, ExitCode( ExitSuccess ))
 import qualified XMonad.StackSet as W
 
   -- Actions
-import XMonad.Actions.CopyWindow (kill1)
 import XMonad.Actions.MouseResize
-
 
   -- Data
 import qualified Data.Map as M
 import Data.Monoid
-import Data.Tree
 
   -- Hooks
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.ManageHelpers
-import XMonad.Hooks.ServerMode
 import XMonad.Hooks.SetWMName
 
   -- Layouts
@@ -42,18 +36,14 @@ import XMonad.Layout.Spacing
 import XMonad.Layout.SubLayouts
 import XMonad.Layout.WindowNavigation
 import XMonad.Layout.LimitWindows (limitWindows)
-import XMonad.Layout.WindowArranger (windowArrange, WindowArrangerMsg(..))
-import XMonad.Layout.MultiToggle (mkToggle, single, EOT(EOT), (??))
-import XMonad.Layout.MultiToggle.Instances (StdTransformers(NBFULL, MIRROR, NOBORDERS))
-import qualified XMonad.Layout.ToggleLayouts as T (toggleLayouts, ToggleLayout(Toggle))
-import qualified XMonad.Layout.MultiToggle as MT (Toggle(..))
+import XMonad.Layout.WindowArranger (windowArrange)
+import XMonad.Layout.MultiToggle (mkToggle, EOT(EOT), (??))
+import XMonad.Layout.MultiToggle.Instances (StdTransformers(NBFULL, NOBORDERS))
+import qualified XMonad.Layout.ToggleLayouts as T (toggleLayouts)
 
   -- Utilities
-import XMonad.Util.Run (runProcessWithInput, safeSpawn, spawnPipe)
+import XMonad.Util.Run (spawnPipe)
 import XMonad.Util.SpawnOnce
-import XMonad.Util.EZConfig (additionalKeysP)
-import XMonad.Util.NamedScratchpad
-import XMonad.Util.Dmenu
 
 import Graphics.X11.ExtraTypes.XF86
 -- import Colors.DoomElectricOutrun --TODO: Learn how to import my own modules in Haskell
@@ -74,7 +64,7 @@ myFileMgr :: String
 myFileMgr = "nautilus"
 
 myFocusFollowsMouse :: Bool
-myFocusFollowsMouse = True
+myFocusFollowsMouse = False
 
 myClickJustFocuses :: Bool
 myClickJustFocuses = False
