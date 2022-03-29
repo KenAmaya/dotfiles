@@ -3,15 +3,18 @@
 
   -- Base
 import XMonad
-import System.Exit (exitWith, ExitCode( ExitSuccess ))
 import qualified XMonad.StackSet as W
 
   -- Actions
 import XMonad.Actions.MouseResize
 
+  -- Contols
+import Control.Monad (join, when)
+
   -- Data
 import qualified Data.Map as M
 import Data.Monoid
+import Data.Maybe (maybeToList)
 
   -- Hooks
 import XMonad.Hooks.ManageDocks
@@ -20,11 +23,13 @@ import XMonad.Hooks.ManageHelpers
 import XMonad.Hooks.SetWMName
 
   -- Layouts
+import XMonad.Layout.Gaps ( gaps )
 import XMonad.Layout.Accordion
 import XMonad.Layout.ResizableTile
 import XMonad.Layout.ThreeColumns
 import XMonad.Layout.Tabbed
 import XMonad.Layout.SimplestFloat
+import XMonad.Layout.Fullscreen (fullscreenSupport, fullscreenManageHook)
 
   -- Layouts modifiers
 import XMonad.Layout.LayoutModifier
@@ -75,9 +80,6 @@ myBorderWidth = 1
 myModMask :: KeyMask
 myModMask = mod4Mask
 
-windowCount :: X (Maybe String)
-windowCount = gets $ Just . show . length . W.integrate' . W.stack . W.workspace . W.current . windowset
-
 -- The default number of workspaces (virtual screens) and their names.
 -- By default we use numeric strings, but any string may be used as a
 -- workspace name. The number of workspaces is determined by the length
@@ -96,6 +98,45 @@ myNormalBorderColor :: String
 myFocusedBorderColor :: String
 myNormalBorderColor  = "#400d66" -- Deep Purple
 myFocusedBorderColor = "#f02ef0" -- Bright Magenta
+
+-- Atom and ewmh full screen
+addNETSupported :: Atom -> X ()
+addNETSupported x   = withDisplay $ \dpy -> do
+    r               <- asks theRoot
+    a_NET_SUPPORTED <- getAtom "_NET_SUPPORTED"
+    a               <- getAtom "ATOM"
+    liftIO $ do
+       sup <- (join . maybeToList) <$> getWindowProperty32 dpy a_NET_SUPPORTED r
+       when (fromIntegral x `notElem` sup) $
+         changeProperty32 dpy r a_NET_SUPPORTED a propModeAppend [fromIntegral x]
+
+addEWMHFullscreen :: X ()
+addEWMHFullscreen   = do
+    wms <- getAtom "_NET_WM_STATE"
+    wfs <- getAtom "_NET_WM_STATE_FULLSCREEN"
+    mapM_ addNETSupported [wms, wfs]
+
+-- eww commands
+ewwSidebar :: MonadIO m => m ()
+ewwSidebar = spawn "exec ~/bin/eww open-many weather_side time_side smol_calendar player_side sys_side sliders_side"
+
+ewwCenter :: MonadIO m => m ()
+ewwCenter = spawn "exec ~/bin/eww open-many blur_full weather profile quote search_full incognito-icon vpn-icon home_dir screenshot full reboot_full lock_full logout_full suspend_full"
+
+ewwClose :: MonadIO m => m ()
+ewwClose = spawn "exec ~/bin/eww close-all"
+
+clipboardy :: MonadIO m => m () -- Don't question it
+clipboardy = spawn "rofi -modi \"\63053 :greenclip print\" -show \"\63053 \" -run-command '{cmd}' -theme ~/.config/rofi/launcher/style.rasi"
+
+rofi_launcher :: MonadIO m => m ()
+rofi_launcher = spawn "rofi -no-lazy-grab -show drun -modi run,drun,window -theme $HOME/.config/rofi/launcher/style -drun-icon-theme \"Sweet-Rainbow\" "
+
+maimcopy :: MonadIO m => m ()
+maimcopy = spawn "maim -s | xclip -selection clipboard -t image/png && notify-send \"Screenshot\" \"Copied to Clipboard\" -i flameshot"
+
+maimsave :: MonadIO m => m ()
+maimsave = spawn "maim -s ~/Pictures/Capture/$(date +%Y-%m-%d_%H-%M-%S).png && notify-send \"Screenshot\" \"Saved to Pictures\" -i flameshot"
 
 ------------------------------------------------------------------------
 -- Key bindings. Add, modify or remove key bindings here.
@@ -118,7 +159,16 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((modm,               xK_d     ), spawn myFileMgr)
 
     -- launch dmenu
-    , ((modm,               xK_p     ), spawn "dmenu_run")
+    , ((modm,               xK_p     ), rofi_launcher)
+    , ((modm .|. shiftMask, xK_p     ), spawn "dmenu_run")
+
+    -- launch eww dashboard
+    , ((modm,               xK_b     ), ewwCenter)
+    , ((modm .|. shiftMask, xK_b     ), ewwClose)
+
+    -- launch eww sidebar
+    , ((modm,               xK_s     ), ewwSidebar)
+    , ((modm .|. shiftMask, xK_s     ), ewwClose)
 
     -- close focused window
     , ((modm .|. shiftMask, xK_c     ), kill)
@@ -175,10 +225,10 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     -- , ((modm              , xK_b     ), sendMessage ToggleStruts)
 
     -- Quit xmonad
-    , ((modm .|. shiftMask, xK_q     ), io (exitWith ExitSuccess))
+    , ((modm                   , xK_q     ), spawn "~/bin/powermenu.sh")
 
     -- Restart xmonad
-    , ((modm              , xK_q     ), spawn "xmonad --recompile; xmonad --restart")
+    , ((modm .|. shiftMask     , xK_q     ), spawn "xmonad --recompile; xmonad --restart")
 
     -- Run xmessage with a summary of the default keybindings (useful for beginners)
     , ((modm .|. shiftMask, xK_slash ), spawn ("echo \"" ++ help ++ "\" | xmessage -file -"))
@@ -190,6 +240,10 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((0, xF86XK_AudioRaiseVolume   ), spawn "amixer set Master 1%+")
     , ((modm, xF86XK_AudioRaiseVolume   ), spawn "amixer set Master 3%+")
     , ((0, xF86XK_AudioMute          ), spawn "amixer set Master toggle")
+
+    -- Screenshot buttons
+    , ((0,                    xK_Print), maimcopy)
+    , ((modm,                 xK_Print), maimsave)
     ]
     ++
 
@@ -234,7 +288,7 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
 -- Layouts Related Settings:
 
 mySpacing :: Integer -> l a -> XMonad.Layout.LayoutModifier.ModifiedLayout Spacing l a
-mySpacing i = spacingRaw False (Border i i i i) True (Border i i i i) True
+mySpacing i = spacingRaw True (Border i i i i) True (Border i i i i) True
 
 myFont :: String
 myFont = "xft:Source Code Pro:size=12:regular:antialias=true:hinting=true"
@@ -247,14 +301,6 @@ myTabTheme = def { fontName            = myFont
                  , activeTextColor     = "#f2f3f7"
                  , inactiveTextColor   = "#7984d1" --from panelTitle.inactiveForeground"
                  }
-
-myShowWNameTheme :: SWNConfig
-myShowWNameTheme = def { swn_font      = "xft:Fira Code:bold:size=42"
-                       , swn_fade      = 1.0
-                       , swn_bgcolor   = "f02ef0"
-                       , swn_color     = "#f2f3f3"
-                       }
-
 
 -- Ken's layouts:
 tall    = renamed [Replace "tall"]
@@ -301,10 +347,6 @@ myLayout = avoidStruts $ mouseResize $ windowArrange $ T.toggleLayouts floats
                              ||| threeCol
                              ||| tallAccordion
                              ||| wideAccordion
-                             ||| Full
-
-
-
 
 ------------------------------------------------------------------------
 -- Window rules:
@@ -321,13 +363,15 @@ myLayout = avoidStruts $ mouseResize $ windowArrange $ T.toggleLayouts floats
 -- To match on the WM_NAME, you can use 'title' in the same way that
 -- 'className' and 'resource' are used below.
 myManageHook :: ManageHook
-myManageHook = composeAll
+myManageHook = fullscreenManageHook <+> manageDocks <+> composeAll
     [ className =? "MPlayer"        --> doFloat
     , className =? "Gimp"           --> doFloat
     , className =? "Org.gnome.Nautilus"         --> doRectFloat ( W.RationalRect 0.2 0.2 0.5 0.5) -- Float the nautilus window somewhere in the middle(0.2) sized at half the width and height of the monitor(0.5)
     , className =? "discord"        --> doShift "M&Ms"
     , resource  =? "desktop_window" --> doIgnore
-    , resource  =? "kdesktop"       --> doIgnore ]
+    , resource  =? "kdesktop"       --> doIgnore
+    , isFullscreen --> doFullFloat
+    ]
 
 ------------------------------------------------------------------------
 -- Event handling
@@ -339,7 +383,7 @@ myManageHook = composeAll
 -- combine event hooks use mappend or mconcat from Data.Monoid.
 --
 myEventHook :: Event -> X All
-myEventHook = ewmhDesktopsEventHook
+myEventHook = mempty
 
 ------------------------------------------------------------------------
 -- Status bars and logging
@@ -347,7 +391,8 @@ myEventHook = ewmhDesktopsEventHook
 -- Perform an arbitrary action on each internal state change or X event.
 -- See the 'XMonad.Hooks.DynamicLog' extension for examples.
 --
--- myLogHook = return ()
+myLogHook :: X ()
+myLogHook = return ()
 
 ------------------------------------------------------------------------
 -- Startup hook
@@ -360,9 +405,14 @@ myEventHook = ewmhDesktopsEventHook
 myStartupHook :: X ()
 myStartupHook = do
     spawnOnce "/usr/bin/emacs --daemon &" -- Launch the emacs server daemon for the emacs client
-    spawnOnce "volumeicon"
     spawnOnce "nitrogen --set-scaled --random /usr/share/backgrounds" --TODO: Create my own directory of wallpapers
     setWMName "LG3D"
+    spawnOnce "~/bin/eww daemon &"
+    spawn "xsetroot -cursor_name left_ptr &"
+    spawn "~/bin/lock.sh &"
+    spawnOnce "picom --experimental-backends"
+    spawnOnce "greenclip daemon"
+    spawnOnce "dunst"
 
 ------------------------------------------------------------------------
 -- Now run xmonad with all the defaults we set up.
@@ -371,9 +421,9 @@ myStartupHook = do
 --
 main :: IO ()
 main = do 
-  xmproc <- spawnPipe "xmobar -x 0 $HOME/.config/xmobar/.xmobarrc-main" -- xmobar settings for main display
+  xmproc <- spawnPipe "$HOME/bin/bartoggle.sh &" -- xmobar settings for main display
   xmprox <- spawnPipe "xmobar -x 1 $HOME/.config/xmobar/.xmobarrc-2nd" --- xmobar settings for 2nd display
-  xmonad $ ewmh $ docks docksDefaults
+  xmonad $ fullscreenSupport $ ewmh $ docks docksDefaults
 
 docksDefaults = def {
       -- simple stuff
@@ -391,10 +441,12 @@ docksDefaults = def {
         mouseBindings      = myMouseBindings,
 
       -- hooks, layouts
-        layoutHook         = showWName' myShowWNameTheme $ myLayout,
-        manageHook         = myManageHook <+> manageDocks,
+        manageHook         = myManageHook,
+        layoutHook         = gaps [(L,10), (R,15), (U,30), (D,10)] $ spacingRaw True (Border 5 5 5 5) True (Border 5 5 5 5) True $ smartBorders $ myLayout,
+        --layoutHook         = showWName' myShowWNameTheme $ myLayout,
         handleEventHook    = myEventHook,
-        startupHook        = myStartupHook
+        logHook            = myLogHook,
+        startupHook        = myStartupHook >> addEWMHFullscreen
     }
 
 -- | Finally, a copy of the default bindings in simple textual tabular format.
