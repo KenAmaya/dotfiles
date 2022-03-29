@@ -99,6 +99,9 @@ myFocusedBorderColor :: String
 myNormalBorderColor  = "#400d66" -- Deep Purple
 myFocusedBorderColor = "#f02ef0" -- Bright Magenta
 
+wallpaperChange :: String
+wallpaperChange = "feh --bg-fill --randomize ~/Pictures/Wallpaper"
+
 -- Atom and ewmh full screen
 addNETSupported :: Atom -> X ()
 addNETSupported x   = withDisplay $ \dpy -> do
@@ -137,6 +140,8 @@ maimcopy = spawn "maim -s | xclip -selection clipboard -t image/png && notify-se
 
 maimsave :: MonadIO m => m ()
 maimsave = spawn "maim -s ~/Pictures/Capture/$(date +%Y-%m-%d_%H-%M-%S).png && notify-send \"Screenshot\" \"Saved to Pictures\" -i flameshot"
+
+
 
 ------------------------------------------------------------------------
 -- Key bindings. Add, modify or remove key bindings here.
@@ -213,10 +218,10 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((modm,               xK_t     ), withFocused $ windows . W.sink)
 
     -- Increment the number of windows in the master area
-    , ((modm              , xK_comma ), sendMessage (IncMasterN 1))
+    , ((modm,               xK_comma ), sendMessage (IncMasterN 1))
 
     -- Deincrement the number of windows in the master area
-    , ((modm              , xK_period), sendMessage (IncMasterN (-1)))
+    , ((modm,               xK_period), sendMessage (IncMasterN (-1)))
 
     -- Toggle the status bar gap
     -- Use this binding with avoidStruts from Hooks.ManageDocks.
@@ -225,10 +230,10 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     -- , ((modm              , xK_b     ), sendMessage ToggleStruts)
 
     -- Quit xmonad
-    , ((modm                   , xK_q     ), spawn "~/bin/powermenu.sh")
+    , ((modm,               xK_q     ), spawn "~/bin/powermenu.sh")
 
     -- Restart xmonad
-    , ((modm .|. shiftMask     , xK_q     ), spawn "xmonad --recompile; xmonad --restart")
+    , ((modm .|. shiftMask, xK_q     ), spawn "xmonad --recompile; xmonad --restart")
 
     -- Run xmessage with a summary of the default keybindings (useful for beginners)
     , ((modm .|. shiftMask, xK_slash ), spawn ("echo \"" ++ help ++ "\" | xmessage -file -"))
@@ -242,8 +247,10 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((0, xF86XK_AudioMute          ), spawn "amixer set Master toggle")
 
     -- Screenshot buttons
-    , ((0,                    xK_Print), maimcopy)
-    , ((modm,                 xK_Print), maimsave)
+    , ((0,                  xK_Print ), maimcopy)
+    , ((modm,               xK_Print ), maimsave)
+
+    , ((modm,               xK_b     ), spawn wallpaperChange)
     ]
     ++
 
@@ -405,7 +412,7 @@ myLogHook = return ()
 myStartupHook :: X ()
 myStartupHook = do
     spawnOnce "/usr/bin/emacs --daemon &" -- Launch the emacs server daemon for the emacs client
-    spawnOnce "nitrogen --set-scaled --random /usr/share/backgrounds" --TODO: Create my own directory of wallpapers
+    spawnOnce wallpaperChange
     setWMName "LG3D"
     spawnOnce "~/bin/eww daemon &"
     spawn "xsetroot -cursor_name left_ptr &"
@@ -422,7 +429,7 @@ myStartupHook = do
 main :: IO ()
 main = do 
   xmproc <- spawnPipe "$HOME/bin/bartoggle.sh &" -- xmobar settings for main display
-  xmprox <- spawnPipe "xmobar -x 1 $HOME/.config/xmobar/.xmobarrc-2nd" --- xmobar settings for 2nd display
+--  xmprox <- spawnPipe "xmobar -x 1 $HOME/.config/xmobar/.xmobarrc-2nd" --- xmobar settings for 2nd display
   xmonad $ fullscreenSupport $ ewmh $ docks docksDefaults
 
 docksDefaults = def {
