@@ -45,6 +45,7 @@ import XMonad.Layout.WindowArranger (windowArrange)
 import XMonad.Layout.MultiToggle (mkToggle, EOT(EOT), (??))
 import XMonad.Layout.MultiToggle.Instances (StdTransformers(NBFULL, NOBORDERS))
 import qualified XMonad.Layout.ToggleLayouts as T (toggleLayouts)
+import qualified XMonad.Layout.MultiToggle as MT (Toggle(..))
 
   -- Utilities
 import XMonad.Util.Run (spawnPipe)
@@ -72,7 +73,7 @@ myFocusFollowsMouse :: Bool
 myFocusFollowsMouse = False
 
 myClickJustFocuses :: Bool
-myClickJustFocuses = False
+myClickJustFocuses = True
 
 myBorderWidth :: Dimension
 myBorderWidth = 1
@@ -99,8 +100,9 @@ myFocusedBorderColor :: String
 myNormalBorderColor  = "#400d66" -- Deep Purple
 myFocusedBorderColor = "#f02ef0" -- Bright Magenta
 
+-- Pick a random wallpaper. 'no-xinerama' so that feh will extend the wallpaper to my monitors
 wallpaperChange :: String
-wallpaperChange = "feh --bg-fill --randomize ~/Pictures/Wallpaper"
+wallpaperChange = "feh --bg-fill --no-xinerama --randomize ~/Pictures/Wallpaper"
 
 -- Atom and ewmh full screen
 addNETSupported :: Atom -> X ()
@@ -168,8 +170,8 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((modm .|. shiftMask, xK_p     ), spawn "dmenu_run")
 
     -- launch eww dashboard
-    , ((modm,               xK_b     ), ewwCenter)
-    , ((modm .|. shiftMask, xK_b     ), ewwClose)
+    --, ((modm,               xK_b     ), ewwCenter)
+    --, ((modm .|. shiftMask, xK_b     ), ewwClose)
 
     -- launch eww sidebar
     , ((modm,               xK_s     ), ewwSidebar)
@@ -183,6 +185,8 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
     --  Reset the layouts on the current workspace to default
     , ((modm .|. shiftMask, xK_space ), setLayout $ XMonad.layoutHook conf)
+
+    , ((modm,               xK_slash   ), sendMessage (MT.Toggle NBFULL) >> sendMessage ToggleStruts)
 
     -- Resize viewed windows to the correct size
     , ((modm,               xK_n     ), refresh)
@@ -240,10 +244,10 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
     -- Ken's Additional Keybindings
     -- Enable the keyboard's volume keys
-    , ((0, xF86XK_AudioLowerVolume   ), spawn "amixer set Master 1%-")
-    , ((modm, xF86XK_AudioLowerVolume   ), spawn "amixer set Master 3%-")
-    , ((0, xF86XK_AudioRaiseVolume   ), spawn "amixer set Master 1%+")
-    , ((modm, xF86XK_AudioRaiseVolume   ), spawn "amixer set Master 3%+")
+    , ((0, xF86XK_AudioLowerVolume   ), spawn "amixer set Master 5%-")
+    , ((modm, xF86XK_AudioLowerVolume   ), spawn "amixer set Master 2%-")
+    , ((0, xF86XK_AudioRaiseVolume   ), spawn "amixer set Master 5%+")
+    , ((modm, xF86XK_AudioRaiseVolume   ), spawn "amixer set Master 2%+")
     , ((0, xF86XK_AudioMute          ), spawn "amixer set Master toggle")
 
     -- Screenshot buttons
@@ -295,7 +299,7 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
 -- Layouts Related Settings:
 
 mySpacing :: Integer -> l a -> XMonad.Layout.LayoutModifier.ModifiedLayout Spacing l a
-mySpacing i = spacingRaw True (Border i i i i) True (Border i i i i) True
+mySpacing i = spacingRaw False (Border i i i i) True (Border i i i i) True
 
 myFont :: String
 myFont = "xft:Source Code Pro:size=12:regular:antialias=true:hinting=true"
@@ -309,18 +313,25 @@ myTabTheme = def { fontName            = myFont
                  , inactiveTextColor   = "#7984d1" --from panelTitle.inactiveForeground"
                  }
 
+myShowWNameTheme :: SWNConfig
+myShowWNameTheme = def { swn_font      = "xft:Fira Code:bold:size=42"
+                       , swn_fade      = 1.0
+                       , swn_bgcolor   = "f02ef0"
+                       , swn_color     = "#f2f3f3"
+                       }
+
 -- Ken's layouts:
 tall    = renamed [Replace "tall"]
-          $ smartBorders
+          -- $ smartBorders
           $ windowNavigation
           $ addTabs shrinkText myTabTheme
           $ subLayout [] (smartBorders Simplest)
           $ limitWindows 8
-          $ mySpacing 3
+          -- $ mySpacing 3
           $ ResizableTall 1 (3/100) (2/5) []
 
 floats  = renamed [Replace "floats"]
-          $ smartBorders
+          -- $ smartBorders
           $ limitWindows 20 simplestFloat
 
 threeCol = renamed [Replace "threeCol"]
@@ -329,7 +340,7 @@ threeCol = renamed [Replace "threeCol"]
          $ addTabs shrinkText myTabTheme
          $ subLayout [] (smartBorders Simplest)
          $ limitWindows 8
-         $ mySpacing 3
+         -- $ mySpacing 3
          $ ThreeCol 1 (3/100) (1/3)
 
 tallAccordion = renamed [Replace "tallAccordion"]
@@ -411,12 +422,12 @@ myLogHook = return ()
 -- By default, do nothing.
 myStartupHook :: X ()
 myStartupHook = do
+    setWMName "LG3D"
     spawnOnce "/usr/bin/emacs --daemon &" -- Launch the emacs server daemon for the emacs client
     spawnOnce wallpaperChange
     setWMName "LG3D"
     spawnOnce "~/bin/eww daemon &"
     spawn "xsetroot -cursor_name left_ptr &"
-    spawn "~/bin/lock.sh &"
     spawnOnce "picom --experimental-backends"
     spawnOnce "greenclip daemon"
     spawnOnce "dunst"
@@ -428,7 +439,7 @@ myStartupHook = do
 --
 main :: IO ()
 main = do 
-  xmproc <- spawnPipe "$HOME/bin/bartoggle.sh &" -- xmobar settings for main display
+  xmproc <- spawnPipe "$HOME/bin/launch_tint2.sh &" -- xmobar settings for main display
 --  xmprox <- spawnPipe "xmobar -x 1 $HOME/.config/xmobar/.xmobarrc-2nd" --- xmobar settings for 2nd display
   xmonad $ fullscreenSupport $ ewmh $ docks docksDefaults
 
@@ -449,7 +460,7 @@ docksDefaults = def {
 
       -- hooks, layouts
         manageHook         = myManageHook,
-        layoutHook         = gaps [(L,10), (R,15), (U,30), (D,10)] $ spacingRaw True (Border 5 5 5 5) True (Border 5 5 5 5) True $ smartBorders $ myLayout,
+        layoutHook         = gaps [(L,0), (R,20), (U,35), (D,5)] $ mySpacing 5 $ smartBorders $ showWName' myShowWNameTheme $ myLayout,
         --layoutHook         = showWName' myShowWNameTheme $ myLayout,
         handleEventHook    = myEventHook,
         logHook            = myLogHook,
