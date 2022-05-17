@@ -424,13 +424,13 @@ myStartupHook :: X ()
 myStartupHook = do
     setWMName "LG3D"
     spawnOnce "/usr/bin/emacs --daemon &" -- Launch the emacs server daemon for the emacs client
-    spawnOnce wallpaperChange
-    setWMName "LG3D"
-    spawnOnce "~/bin/eww daemon &"
     spawn "xsetroot -cursor_name left_ptr &"
+    spawnOnce "~/bin/eww daemon &"
     spawnOnce "picom --experimental-backends"
     spawnOnce "greenclip daemon"
     spawnOnce "dunst"
+    --spawnOnce "~/.xmonad/scripts/monitor-setup.sh"
+    spawnOnce wallpaperChange
 
 ------------------------------------------------------------------------
 -- Now run xmonad with all the defaults we set up.

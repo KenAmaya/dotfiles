@@ -69,13 +69,9 @@ unset __conda_setup
 
 # Ken's (my own) aliases
 
+alias la="ls -la"
 alias lat="ls -laht"
 alias lah="ls -lah"
-
-## Confirm before overwrite
-alias cp="cp -i"
-alias mv="mv -i"
-alias rm="rm -i"
 
 alias discord="flatpak run com.discordapp.Discord"
 
@@ -88,10 +84,10 @@ alias dothead="dotgit log | head -n 18"
 alias gs="git status"
 alias githead="git log | head -n 18"
 
+# Run script to configure displays
+alias monitor-setup="~/.xmonad/scripts/monitor-setup.sh"
+
 # Ken's own paths
-# For homebrew with zsh
-export PATH=$PATH:/home/linuxbrew/.linuxbrew/bin/brew
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 # Add my home folder's local /bin
 export PATH=$PATH:$HOME/.local/bin
 # Add my emac installation bin
